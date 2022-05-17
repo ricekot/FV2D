@@ -24,10 +24,11 @@ void mexFunction( int nlhs, mxArray *plhs[],
   double *c2nac; /* input : n_cells x 1 : number of cells encircling each interior cell */
   double *Q;     /* input : max_nc x max_nc x n_cells : Q' of dX = QR */
   double *R;     /* input : n_dims x max_nc x n_cells : R of dX = QR */
+  double *dXinv;
 
   double *dUdX;  /* output : n_fields x n_dims x n_cells_total : grad of primitive variables in each cell */
 
-  int n_fields, n_dims, n_cells, n_cells_tot;
+  mwSize n_fields, n_dims, n_cells, n_cells_tot;
   int max_nc;
 
   /* check for proper number of arguments */
@@ -67,7 +68,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   dUdX = mxGetPr(plhs[0]);
   
   int nc, ic2, iu1, iu2, igradu, ix, idu;
-  double *dU;
+  double *dU, *dU2;
   for (int ic=0; ic<n_cells; ic++) {
     nc = c2nac[ic];
     //mexPrintf("\nic = %i, nc = %i, max_nc = %i\n",ic,nc,max_nc);
@@ -88,7 +89,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
     
     // Get dU2 = Q'*dU
     dU2 = new double[n_fields*nc*2];
-    for (i=0; i<n_fields*nc*2; i++) 
+    for (int i=0; i<n_fields*nc*2; i++) 
       dU2[i] = 0;
 
     for (int j=0; j<nc; j++) {

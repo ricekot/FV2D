@@ -32,8 +32,8 @@ void mexFunction( int nlhs, mxArray *plhs[],
     
   double *dUdX;  /* output : n_fields x n_dims x n_cells_total : grad of primitive variables in each cell */
 
-  int n_fields, n_dims, n_verts, n_cells_tot, n_verts_tot, n_edges_tot;
-  int n_ghost_verts;
+  mwSize n_fields, n_dims, n_verts, n_cells_tot, n_verts_tot, n_edges_tot;
+  mwSize n_ghost_verts;
 
   /* check for proper number of arguments */
   if(nrhs!=10) {

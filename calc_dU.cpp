@@ -23,10 +23,10 @@ void mexFunction( int nlhs, mxArray *plhs[],
   double *dUdX; /* n_fields x n_faces x n_cells_total input matrix (primitive variables gradient in each element) */
   double *dXE;  /* n_dims x n_faces x n_cells input matrix (vector from cell center to each cell edge)  */
   double *dU;   /* n_fields x n_faces x n_cells output matrix (del(U) dot r_ij) */
-  int n_cells;  /* input : number of [non-ghost] cells in the mesh */
+  mwSize n_cells;  /* input : number of [non-ghost] cells in the mesh */
 
   //int *size1, *size2;                   /* size of input matrix */
-  int n_faces, n_cells_tot, n_fields, n_dims;
+  mwSize n_faces, n_cells_tot, n_fields, n_dims;
 
   /* check for proper number of arguments */
   if(nrhs!=3) {
@@ -42,8 +42,8 @@ void mexFunction( int nlhs, mxArray *plhs[],
   n_cells = (int)mxGetScalar(prhs[2]);
 
   /* get dimensions of the input matrix */
-  const int *size1 = mxGetDimensions(prhs[0]);
-  const int *size2 = mxGetDimensions(prhs[1]);
+  const mwSize *size1 = mxGetDimensions(prhs[0]);
+  const mwSize *size2 = mxGetDimensions(prhs[1]);
   
   n_fields = size1[0];
   n_dims = size1[1];
