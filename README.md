@@ -75,3 +75,25 @@ Next, the function calculates the face-normal momentum of the left and right sta
 
 Finally, the function calculates the Euler flux at the interface by averaging the left and right states using the face-normal momentum, velocities, and pressure.
 The result is stored in the array pointed to by fn.
+
+## Roe_Flux
+
+This function computes the Roe flux for the Euler equations of gas dynamics, 
+given the left and right states (u_l and u_r) and the normal vector to the 
+interface between the states (norm). 
+The Euler equations describe the motion of a compressible, inviscid fluid, 
+and the Roe flux is a widely used numerical flux function for solving these equations.
+
+The function first computes the velocities and pressures of the left and right states.
+It then calculates intermediate quantities such as the square root of the density ratio, 
+the velocity in the direction normal to the interface, and the enthalpy. 
+It then computes the Euler flux for the left and right states, which consists of the mass,
+momentum, and energy fluxes across the interface.
+
+Finally, the function applies an "entropy fix" to ensure that the flux is well-behaved
+and to avoid oscillations in the solution. This is done by modifying the characteristic
+speeds if they are smaller than a certain threshold.
+The function then calculates the components of the Roe flux, which are linear combinations
+of the left and right states and the intermediate quantities calculated earlier.
+The Roe flux is returned as a vector (fn).
+

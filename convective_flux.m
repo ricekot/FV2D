@@ -64,9 +64,9 @@ function fn = compute(u_l, u_r, norm, area)
 
     % Euler flux
     fn = [
-            area * 0.5 * (rhoun_l + rhoun_r);...
-            area * 0.5 * (rhoun_l * v_l(1) + rhoun_r * v_r(1) + (p_l + p_r) * norm(1));...
-            area * 0.5 * (rhoun_l * v_l(2) + rhoun_r * v_r(2) + (p_l + p_r) * norm(2));...
+            area * 0.5 * (rhoun_l + rhoun_r);
+            area * 0.5 * (rhoun_l * v_l(1) + rhoun_r * v_r(1) + (p_l + p_r) * norm(1));
+            area * 0.5 * (rhoun_l * v_l(2) + rhoun_r * v_r(2) + (p_l + p_r) * norm(2));
             area * 0.5 * (rhoun_l * h_l   + rhoun_r * h_r)
         ];
 end
