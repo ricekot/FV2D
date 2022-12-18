@@ -93,7 +93,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
       mexErrMsgTxt("viscous_flux.cpp : 9 inputs required.");
   }
   if(nlhs!=1) {
-      mexErrMsgTxt("viscouse_flux.cpp : One output required.");
+      mexErrMsgTxt("viscous_flux.cpp : One output required.");
   }
 
   /* check that first input argument is size 4x1 */

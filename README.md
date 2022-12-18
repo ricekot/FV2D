@@ -97,3 +97,51 @@ The function then calculates the components of the Roe flux, which are linear co
 of the left and right states and the intermediate quantities calculated earlier.
 The Roe flux is returned as a vector (fn).
 
+## viscous_flux
+
+The input arguments for this function are as follows:
+
+- tauL: a matrix of size n_edges x 6 containing the left state vector of gradients for each edge.
+- tauR: a matrix of size n_edges x 6 containing the right state vector of gradients for each edge.
+- phiL: a matrix of size n_edges x 4 containing the left state vector of primitives for each edge.
+- phiR: a matrix of size n_edges x 4 containing the right state vector of primitives for each edge.
+- NORM: a matrix of size n_edges x 2 containing the unit normal vector for each edge.
+- AREA: a matrix of size n_edges x 1 containing the area of each edge.
+- Cp: a scalar representing a physical constant.
+- Pr: a scalar representing a physical constant.
+- R: a scalar representing a physical constant.
+
+The output of the function is a matrix of size n_edges x 4 containing the normal flux vector for each edge.
+
+The function first calls the compute function on the left and right state vectors of gradients and primitives, and stores the resulting flux vectors in FL, GL, FR, and GR.
+It then calculates the normal flux vector for each edge by taking the average of the dot product of the left and right flux vectors with the corresponding normal vector, and multiplying by the area of the edge.
+The result is stored in the output matrix Fn.
+
+### compute
+The compute function calculates the flux vectors for a viscous fluid in two dimensions.
+A flux vector is a measure of the flow of a quantity (such as mass, momentum, or energy) across a surface.
+The flux vectors calculated by this function represent the flow of mass, momentum, and energy across a given interface in the fluid.
+
+The input state vector of gradients grad_u contains information about the spatial derivatives of the velocity and temperature fields in the fluid.
+
+- grad_u: a double array of size 6 containing the state vector of gradients. The elements are arranged as follows: [du/dx, du/dy, dv/dx, dv/dy, dT/dx, dT/dy].
+
+These derivatives are used to calculate the viscous stress tensor, which describes the forces acting on the fluid due to viscous effects.
+The input state vector of primitives phi contains information about the density, velocity, and temperature of the fluid.
+
+- phi: a double array of size 4 containing the state vector of primitives. The elements are arranged as follows: [rho, u, v, T].
+
+The physical constants Cp, Pr, and R are specific to the fluid being considered.
+Cp is the heat capacity at constant pressure, Pr is the Prandtl number, and R is the gas constant.
+These constants are used to calculate the heat flux vector, which describes the flow of heat across the interface.
+
+- Cp: a scalar representing a physical constant.
+- Pr: a scalar representing a physical constant.
+- R: a scalar representing a physical constant.
+
+The compute function uses the input gradients, primitives, and physical constants to calculate the mass, momentum, and energy flux 
+vectors for the fluid.
+These flux vectors can be used to model the flow of the fluid and to understand how it will behave under different conditions.
+
+The function returns two double arrays of size 4, representing the flux vectors in the x and y directions: F and G.
+These flux vectors are calculated based on the input gradients and primitives, and the physical constants Cp, Pr, and R.
