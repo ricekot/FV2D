@@ -53,3 +53,25 @@ The QR method is a numerical technique for computing the gradient of a function 
 The method involves constructing a matrix Q whose columns are the difference vectors between the function values at the encircling cells and the center cell, and a matrix R whose columns are a set of orthonormal vectors that span the same space as the columns of Q. The gradient can then be computed as the product of the inverse of R and the transpose of Q (R\Q').
 
 The QR method is an alternative to the traditional finite difference method, which involves directly computing the gradient as the difference between the function values at the encircling cells and the center cell, divided by the distance between the cells. The QR method has the advantage that it is more accurate and less sensitive to round-off errors, especially when the encircling cells are not equally spaced. However, it requires the computation of the QR decomposition, which can be more computationally expensive than the finite difference method.
+
+## convective_flux
+
+This function calculates the convective flux at a given interface between two fluid regions in a 2D computational fluid dynamics (CFD) simulation. The input variables are:
+
+- u_l: a pointer to an array of 4 doubles representing the conservative variables of the left state at the interface
+- u_r: a pointer to an array of 4 doubles representing the conservative variables of the right state at the interface
+- norm: a pointer to an array of 2 doubles representing the outward-pointing normal vector of the interface
+- area: a double representing the area of the interface
+- fn: a pointer to an array of 4 doubles where the result will be stored
+
+The conservative variables of the fluid are density, momentum, and energy.
+These are stored in the arrays u_l and u_r in the following order: density, x-momentum, y-momentum, energy.
+
+The function first calculates the velocities of the left and right states using the density and momentum.
+It then calculates the pressure of the left and right states using the ideal gas law and the energy and velocity.
+It then calculates the enthalpy of the left and right states using the density, pressure, and velocity.
+
+Next, the function calculates the face-normal momentum of the left and right states by taking the dot product of the momentum and the normal vector.
+
+Finally, the function calculates the Euler flux at the interface by averaging the left and right states using the face-normal momentum, velocities, and pressure.
+The result is stored in the array pointed to by fn.
