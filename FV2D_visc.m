@@ -14,20 +14,20 @@ plotFreq = 100;        % Frequecy at which to plot solution
 resFreq = 100;         % Residual plotting frequency
 plotVar = 6;           % Variable to plot (1-4: W, 5-8: phi, 9: M)
 % Simulation Control
-CFL = 2.4;             % CFL number
-iterMax = 300000;       % Maximum iteration
+CFL = 0.1;             % CFL number
+iterMax = 20000;       % Maximum iteration
 limiter = 1;           % Slope limiter - Venkatakrishnan, Barth & Jespersen, or AJ
-K = 1000;               % Venkatakrishnan limiter parameter (~.1-4? Lower = more limiting)
+K = 1E-9;               % Venkatakrishnan limiter parameter (~.1-4? Lower = more limiting)
 % Simulation Start & Input
 restart = false;
-meshFile    = 'ViscBump_Fine';  % File containing all geometry data to start from
-restartFile = 'ViscBump_';
+meshFile    = 'FlatPlate_Fine';  % File containing all geometry data to start from
+restartFile = 'ViscBump_Fine_4000';
 % Convergence
 err_tol = 10^-5;       % Convergence tolerance (used on density)
 resnorm = false;       % Use actual residual, or normalize to iteration 1?
 % Data Output
-outputFreq = 1000;    % Frequency of restart-file writing
-dataFile = 'ViscBump_Fine';
+outputFreq = 2000;    % Frequency of restart-file writing
+dataFile = 'FlatPlate_Fine';
 
 %% ------------------------------------------------------------------------
 % Load Restart File or Mesh File
@@ -471,86 +471,8 @@ while iter < iterMax
         % Use a least-squares fit through surrounding cells
         dphidX = calc_grad_dxinv(phi,c2ac,c2nac,dXinv);
         
-        % ------------------- Apply B.C.'s to gradients -------------------
-%         icg = ((n_cells+1):n_cells_total)';
-%         ici = c2c(icg,1);
-%         bcg = bc(c2e(icg,1));
-%         
-%         % Inlet/Outlet - Copy
-%         icg1 = icg(bcg<5);
-%         ici1 = ici(bcg<5);
-%         dphidX(:,:,icg1) = dphidX(:,:,ici1);
-%         
-%         % NOTE: ghost cells ALWAYS on 'right' of all boundary edges
-%         % Slip Wall - Mirror velocities about wall
-%         if n_slip_wall > 0
-%             icg1 = e2c(ie_slip_wall,2);
-%             ici1 = e2c(ie_slip_wall,1);
-%             % du/dx and dv/dy are the same
-%             dphidX(2,1,icg1) = dphidX(2,1,ici1);
-%             dphidX(3,2,icg1) = dphidX(3,2,ici1);
-%             % du/dy and dv/dx are mirrored
-%             dphidX(2,2,icg1) = -dphidX(2,2,ici1);
-%             dphidX(3,1,icg1) = -dphidX(3,1,ici1);
-%             % drho/dx and dp/dx are same
-%             dphidX([1,4],1,icg1) = dphidX([1,4],1,ici1);
-%             % drho/dy and dp/dy are mirrored
-%             dphidX([1,4],2,icg1) = -dphidX([1,4],2,ici1);
-%         end
-%         % No-Slip Wall - Mirror and flip gradients about wall
-%         % Do coordinate transformation at edges from x,y to  normal, 
-%         % tangential coordinates
-%         if n_adiabatic_wall > 0 || n_isothermal_wall > 0
-%             icg1 = [e2c(ie_adiabatic_wall,2);e2c(ie_isothermal_wall,2)];
-%             ici1 = [e2c(ie_adiabatic_wall,1);e2c(ie_isothermal_wall,1)];
-%             
-%             ie = [ie_adiabatic_wall,ie_isothermal_wall];
-%             nhat = unorm(ie,:);
-%             blah = ones(length(nhat),2)/sqrt(2);
-%             that = blah - repmat(sum(nhat.*blah,2),[1,2]).*nhat;
-%             that = that./repmat(sqrt(sum(that.^2,2)),[1,2]);
-%             dundu = nhat(:,1); dundv = nhat(:,2);
-%             dutdu = that(:,1); dutdv = that(:,2);
-%             dxdn = 1./nhat(:,1); dydn = 1./nhat(:,2);
-%             dxdt = 1./that(:,1); dydt = 1./that(:,2);
-%             % dudn = dudx*dxdn + dudy*dydn, etc.
-%             dudn = squeeze(dphidX(2,1,ici1)).*dxdn + squeeze(dphidX(2,2,ici1)).*dydn;
-%             dvdn = squeeze(dphidX(3,1,ici1)).*dxdn + squeeze(dphidX(3,2,ici1)).*dydn;
-%             dudt = squeeze(dphidX(2,1,ici1)).*dxdt + squeeze(dphidX(2,2,ici1)).*dydt;
-%             dvdt = squeeze(dphidX(3,1,ici1)).*dxdt + squeeze(dphidX(3,2,ici1)).*dydt;
-%             drhodn = squeeze(dphidX(1,1,ici1)).*dxdn + squeeze(dphidX(1,2,ici1)).*dydn;
-%             dpdn   = squeeze(dphidX(4,1,ici1)).*dxdn + squeeze(dphidX(4,2,ici1)).*dydn;
-%             drhodt = squeeze(dphidX(1,1,ici1)).*dxdt + squeeze(dphidX(1,2,ici1)).*dydt;
-%             dpdt   = squeeze(dphidX(4,1,ici1)).*dxdt + squeeze(dphidX(4,2,ici1)).*dydt;
-%             % dun/dn = dun/du * du/dn + dun/dv * dv/dn, etc.
-%             % dut/dn, dun/dn are same
-%             % dut/dt, dun/dt are mirrored
-%             dundn = dundu.*dudn + dundv.*dvdn;
-%             dundt =-dundu.*dudt - dundv.*dvdt;
-%             dutdn = dutdu.*dudn + dutdv.*dvdn;
-%             dutdt =-dutdu.*dudt - dutdv.*dvdt;
-%             
-%             % Transform un, ut to x,y
-%             dundx = dundn./dxdn + dundt./dxdt;
-%             dundy = dundn./dydn + dundt./dydt;
-%             dutdx = dutdn./dxdn + dutdt./dxdt;
-%             dutdy = dutdn./dydn + dutdt./dydt;
-%             
-%             % Transform all derivatives back to x,y
-%             dphidX(2,1,icg1) = (1./dundu).*dundx + (1./dutdu).*dutdx; % dudx
-%             dphidX(2,2,icg1) = (1./dundu).*dundy + (1./dutdu).*dutdy; % dudy
-%             dphidX(3,1,icg1) = (1./dundv).*dundx + (1./dutdv).*dutdx; % dvdx
-%             dphidX(3,2,icg1) = (1./dundv).*dundy + (1./dutdv).*dutdy; % dvdy
-%             % drho/dt, dp/dt are same
-%             % drho/dn, dp/dn are mirrored
-%             dphidX(1,1,icg1) = -drhodn./dxdn + drhodt./dxdt; % drhodx
-%             dphidX(1,2,icg1) = -drhodn./dydn + drhodt./dydt; % drhody
-%             dphidX(4,1,icg1) = -dpdn./dxdn + dpdt./dxdt;     % dpdx
-%             dphidX(4,2,icg1) = -dpdn./dydn + dpdt./dydt;     % dpdy
-%         end
-        size(dphidX)
-        temp = apply_bcs_grad_phi(dphidX,c2c,c2e,bc,unorm,n_cells);
-        dphidX = temp;
+        % ------------------- Apply B.C.'s to gradients -------------------        
+        dphidX = apply_bcs_grad_phi(dphidX,c2c,c2e,bc,unorm,n_cells);
         
         % ====================== GRADIENT LIMITING ====================== %
         % Reconstruct solution: extrapolate from cell centers to edge centers
@@ -598,18 +520,9 @@ while iter < iterMax
         % Get the final limiting function & apply to del(phi)
         ic = (1:n_cells_total)';
         PHImin = min(PHI,[],2);
-%         ic1 = e2c(ie_adiabatic_wall,:);
-%         PHImin(2:3,1,ic1) = 1;
         for j = 1:2
             dphidX(:,j,ic) = dphidX(:,j,ic) .* PHImin;
         end
-        
-%         ic1 = e2c(ie_adiabatic_wall,1);
-%         ic2 = e2c(ie_adiabatic_wall,2);
-%         dphidX(2,2,ic1) = phi(ic1,2)./(XYC(ic1,2)-XYE(ie_adiabatic_wall,2));
-%         dphidX(3,2,ic1) = phi(ic1,3)./(XYC(ic1,2)-XYE(ie_adiabatic_wall,2));
-%         dphidX(2,2,ic2) = phi(ic2,3)./(XYC(ic2,2)-XYE(ie_adiabatic_wall,2));
-%         dphidX(3,2,ic2) = phi(ic2,4)./(XYC(ic2,2)-XYE(ie_adiabatic_wall,2));
         
         % ======================== VISCOUS TERMS ======================== %
         % Calculate gradients of viscous terms for reconstruction
@@ -624,30 +537,13 @@ while iter < iterMax
                    phi(ic,4)./(R*phi(ic,1).^2) .* squeeze(dphidX(1,2,ic));
                
         % ===================== SECOND DERIVATIVES ====================== %
-        dtaudX = calc_grad_tau(tau,v2c,v2nc,xv,e2v,v2ne,c2v,c2nf,gv2iv,gv2bc);
-        % Use a least-squares fit through surrounding cells             
-%         dtaudX = zeros(6,2,n_cells_total);
-%         for ic=1:n_cells
-%             ic2 = unique(v2c(c2v(ic,:),:));
-%             ic2 = ic2(ic2>0);
-%             nc = length(ic2);
-%             dtau = zeros(nc,6);
-%             dX = zeros(nc,2);
-%             for j=1:nc
-%                 dtau(j,:) = tau(ic2(j),:) - tau(ic,:);
-%                 dX(j,:) = XYC(ic2(j),:) - XYC(ic,:);
-%             end
-%             dtaudX(:,:,ic) = (dX\dtau)';
-%             dtaudX(:,:,ic) = (R_qr(1:nc,:,ic)\Q(1:nc,1:nc,ic)*dtau)';
-%             dtaudX(:,:,ic) = (dXinv(:,1:nc,ic)*dtau)';
-%         end
+        dtaudX1 = calc_grad_dxinv(tau,c2ac,c2nac,dXinv);
 
         % Mirror second derivatives to ghost cells
         icg = (n_cells+1):n_cells_total;
         ici = c2c(icg,1);
         dtaudX(:,:,icg) = dtaudX(:,:,ici);
         
-        % ================== VISCOUS GRADIENT LIMITING ================== %
         % Reconstruct solution: extrapolate from cell centers to edge centers
         dtau = calc_dU(dtaudX,dXE,n_cells_total);
                         
@@ -657,8 +553,8 @@ while iter < iterMax
         % get the new reconstructed phi and tau vectors
         ic = (1:n_cells_total)';
         for j = 1:max_nf
-            phiE(ic,j,:) = phi(ic,:) + squeeze(PHImin.*dphi(:,j,ic))';
-%             phiE(ic,j,:) = phi(ic,:) + squeeze(dphi(:,j,ic))';
+            %phiE(ic,j,:) = phi(ic,:) + squeeze(PHImin.*dphi(:,j,ic))';
+            phiE(ic,j,:) = phi(ic,:) + squeeze(dphi(:,j,ic))';
             tauE(ic,j,:) = tau(ic,:) + squeeze(dtau(:,j,ic))';
         end
 
@@ -671,8 +567,6 @@ while iter < iterMax
         % =================== LEFT & RIGHT EDGE STATES ================== %
         % Reorganize reconstructed solution into L & R states for each edge
         % Need to match local face of each cell to global edge
-        % WL(ie,:) = WE(icL,ifL,:);
-        % WR(ie,:) = WE(icR,ifR,:);
         ie = (1:n_edges)';
         icL = e2c(ie,1);
         icR = e2c(ie,2);
@@ -705,7 +599,6 @@ while iter < iterMax
         phiLi = phiL(inte,:);
         phiRi = phiR(inte,:);
                 
-        clear FnIE;
         FnIE = Roe_Flux_2(WLi,WRi,fnorm,da);
         Fn(inte,:) = FnIE;
         
@@ -717,7 +610,6 @@ while iter < iterMax
         %phiL(ie_adiabatic_wall,3) = 0;  phiR(ie_adiabatic_wall,3) = 0;
         
         da = dA(1:n_edges);
-        clear FnVis;
         FnVis = viscous_flux(tauL,tauR,phiL,phiR,unorm,da,Cp,Pr,R);
         Fn = Fn + FnVis;
         
